@@ -5,7 +5,7 @@ import enumeradores.EstadoNavio;
 
 /**
  * Modelo que representa un navío con su tipo, su tamaño y los impactos que ha recibido
- * @author
+ * @author Andre
  */
 public class Navio {
 

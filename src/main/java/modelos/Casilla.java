@@ -6,7 +6,7 @@ import enumeradores.EstadoNavio;
 /**
  * Modelo que representa una casilla del tablero, puede 
  * tener un navío y puede haber sido disparada
- * @author
+ * @author Andre
  */
 public class Casilla {
 

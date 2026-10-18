@@ -2,7 +2,7 @@ package enumeradores;
 
 /**
  * Enumerador que define los tipos de navío que existen en el juego
- * @author
+ * @author Andre
  */
 public enum TipoNavio {
 
