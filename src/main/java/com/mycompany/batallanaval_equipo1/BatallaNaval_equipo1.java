@@ -39,8 +39,7 @@ public class BatallaNaval_equipo1 {
         // Crea instancias para inyectarlas
         Partida partida = new Partida(jugador1, jugador2, LIMITE_SEGUNDOS_TURNO);
         JuegoController controlador = new JuegoController(partida);
-        Impresor impresor = new Impresor();
-        VistaTerminal vista = new VistaTerminal(controlador, partida, impresor);
+        VistaTerminal vista = new VistaTerminal(controlador, partida);
 
         // Arranca el juego
         partida.agregarObservador(vista);
