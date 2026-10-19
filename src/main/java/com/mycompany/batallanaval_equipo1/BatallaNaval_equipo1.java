@@ -46,9 +46,17 @@ BatallaNaval_equipo1 {
         partida.agregarObservador(vista);
         vista.iniciar();
     }
-
+    
+    
+    
     /**
-     * Coloca directamente todos los navíos en el tablero del jugador validando límites y adyacencias
+     * Coloca directamente todos los navíos en el tablero 
+     * del jugador validando límites y adyacencias. Se hace de
+     * manera automática porque el despliegue de navíos representa
+     * otro caso de uso
+     * 
+     * @param jugador
+     * @param random 
      */
     private static void desplegarFlota(Jugador jugador, Random random) {
         Tablero tablero = jugador.getTablero();

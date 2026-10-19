@@ -3,7 +3,7 @@ package modelos;
 /**
  * Modelo que representa una posición del tablero con fila y columna,
  * desacoplando así la forma de ubicar las casillas
- * @author Andre Andre
+ * @author Andre
  */
 public class Coordenada {
 

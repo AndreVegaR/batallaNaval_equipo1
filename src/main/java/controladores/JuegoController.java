@@ -7,7 +7,6 @@ import modelos.Disparo;
 import modelos.Jugador;
 import modelos.Navio;
 import modelos.Partida;
-import modelos.Tablero;
 
 /**
  * Controlador que recibe las acciones de la vista y ordena a la partida y a sus
@@ -109,9 +108,5 @@ public class JuegoController {
     private void hundirNavio(Jugador rival, Navio navio) {
         // Marca el navío como destruido
         rival.agregarNavioDestruido(navio);
-        Tablero tableroRival = rival.getTablero();
-
-
     }
-
 }
