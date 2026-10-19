@@ -22,7 +22,7 @@ import observador.IObservadorTurno;
  *
  * @author Andre
  */
-public class VistaTerminal implements IObservadorTurno {
+public class PantallaBatalla implements IObservadorTurno {
 
     private static final String SEPARADOR = "==================================================";
 
@@ -40,7 +40,7 @@ public class VistaTerminal implements IObservadorTurno {
      * jugador
      * @param modelo modelo de solo lectura del que se consultan los datos
      */
-    public VistaTerminal(JuegoController controlador, IModelo modelo) {
+    public PantallaBatalla(JuegoController controlador, IModelo modelo) {
         this.controlador = controlador;
         this.modelo = modelo;
         this.scanner = new Scanner(System.in);

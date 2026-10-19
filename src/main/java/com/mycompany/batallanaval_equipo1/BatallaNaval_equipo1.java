@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- */
-
 package com.mycompany.batallanaval_equipo1;
 
 import controladores.JuegoController;
@@ -15,7 +11,7 @@ import modelos.Navio;
 import modelos.Partida;
 import modelos.Perfil;
 import modelos.Tablero;
-import vistas.VistaTerminal;
+import vistas.PantallaBatalla;
 
 /**
  *
@@ -40,7 +36,7 @@ BatallaNaval_equipo1 {
         // Crea instancias para inyectarlas
         Partida partida = new Partida(jugador1, jugador2, LIMITE_SEGUNDOS_TURNO);
         JuegoController controlador = new JuegoController(partida);
-        VistaTerminal vista = new VistaTerminal(controlador, partida);
+        PantallaBatalla vista = new PantallaBatalla(controlador, partida);
 
         // Arranca el juego
         partida.agregarObservador(vista);

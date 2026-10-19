@@ -47,16 +47,13 @@ public class JuegoController {
         Casilla casilla = partida.marcarCasillaDisparada(coordenada);
         Disparo disparo = new Disparo(coordenada);
 
+        // Si la casilla tiene un navío
         if (casilla.contieneNavio()) {
             partida.marcarCasillaNavio(coordenada);
             Navio navio = casilla.getReferenciaNavio();
             disparo.setImpactoNavio(true);
             disparo.setNavioImpactado(navio);
-
-            // Si el disparo hundió el navío, lo hunde por completo
-            if (navio.estadoNavio() == EstadoNavio.HUNDIDO) {
-                hundirNavio(rival, navio);
-            }
+            reiniciarContador();
         }
 
         // Registra el disparo y decide si hay ganador, si se conserva el turno o si pasa al rival
@@ -96,17 +93,5 @@ public class JuegoController {
      */
     public void reiniciarContador() {
         partida.reiniciarContador();
-    }
-
-    /**
-     * Hunde un navío: lo marca como destruido en el rival y marca como
-     * disparadas las casillas que lo rodean
-     *
-     * @param rival jugador dueño del navío
-     * @param navio navío que se hundió
-     */
-    private void hundirNavio(Jugador rival, Navio navio) {
-        // Marca el navío como destruido
-        rival.agregarNavioDestruido(navio);
     }
 }
