@@ -100,13 +100,8 @@ public class PantallaBatalla implements IObservadorTurno {
         int numeroTurno = modelo.obtenerCantidadTurnos();
         int segundosRestantes = modelo.obtenerSegundosRestantes();
 
-        // Cuenta los disparos realizados en el turno
-        Turno turno = jugador.getTurno();
-        List<Disparo> disparos = turno.getDisparos();
-        int disparosTurno = disparos.size();
-
         // Imprime el menú con esos datos
-        imprimirMenuPrincipal(jugador, numeroTurno, segundosRestantes, disparosTurno);
+        imprimirMenuPrincipal(jugador, numeroTurno, segundosRestantes);
     }
 
     /**
@@ -327,9 +322,8 @@ public class PantallaBatalla implements IObservadorTurno {
      * @param jugador que tiene el turno
      * @param numeroTurno en el que va la partida
      * @param segundosRestantes que le quedan al jugador en turno
-     * @param disparosTurno realizados en el turno actual
      */
-    private void imprimirMenuPrincipal(Jugador jugador, int numeroTurno, int segundosRestantes, int disparosTurno) {
+    private void imprimirMenuPrincipal(Jugador jugador, int numeroTurno, int segundosRestantes) {
         // Obtiene los datos del perfil del jugador
         Perfil perfil = jugador.getPerfil();
         String nombre = perfil.getNombre();
@@ -339,7 +333,7 @@ public class PantallaBatalla implements IObservadorTurno {
         System.out.println();
         System.out.println(SEPARADOR);
         System.out.println("TURNO " + numeroTurno + " | " + nombre + " [" + color + "]");
-        System.out.println("Tiempo restante: " + segundosRestantes + " s | Disparos en este turno: " + disparosTurno);
+        System.out.println("Tiempo restante: " + segundosRestantes + " s");
         System.out.println(SEPARADOR);
 
         // Imprime las opciones del menú
