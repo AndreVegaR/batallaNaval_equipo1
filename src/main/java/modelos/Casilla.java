@@ -4,50 +4,61 @@ import enumeradores.EstadoCasilla;
 import enumeradores.EstadoNavio;
 
 /**
- * Modelo que representa una casilla del tablero, puede 
- * tener un navío y puede haber sido disparada
+ * Modelo que representa una casilla del tablero, puede tener un navío y puede
+ * haber sido disparada
+ *
  * @author Andre
+ * @author Brian
  */
 public class Casilla {
 
+    private Coordenada coordenada;
     private Navio referenciaNavio;
     private boolean disparada;
 
     /**
      * Construye una casilla vacía y sin disparar
+     *
+     * @param coordenada posición de la casilla dentro del tablero
      */
-    public Casilla() {
+    public Casilla(Coordenada coordenada) {
+        this.coordenada = coordenada;
         this.referenciaNavio = null;
         this.disparada = false;
     }
 
     /**
      * Indica si la casilla está ocupada por un navío
+     *
      * @return true si hay un navío en la casilla
      */
     public boolean contieneNavio() {
         return referenciaNavio != null;
     }
 
-    /** Registra un impacto en el navío que ocupa la casilla */
+    /**
+     * Registra un impacto en el navío que ocupa la casilla
+     */
     public void impactarNavio() {
         if (referenciaNavio != null) {
             referenciaNavio.agregarImpacto();
         }
     }
 
-    /** Marca como disparada a la casilla vacía que está junto a un navío hundido */
+    /**
+     * Marca como disparada a la casilla vacía que está junto a un navío hundido
+     */
     public void careceAdyacente() {
         if (!contieneNavio()) {
             disparada = true;
         }
     }
 
-
-
     /**
-     * Calcula el estado de la casilla, retorna el enumerador en lugar del boolean del diagrama
-     * porque IModel necesita distinguir agua, impacto y hundimiento
+     * Calcula el estado de la casilla, retorna el enumerador en lugar del
+     * boolean del diagrama porque IModel necesita distinguir agua, impacto y
+     * hundimiento
+     *
      * @return estado actual de la casilla
      */
     public EstadoCasilla estadoCasilla() {
@@ -68,8 +79,7 @@ public class Casilla {
         }
         return EstadoCasilla.IMPACTO;
     }
-    
-    
+
     public Navio getReferenciaNavio() {
         return referenciaNavio;
     }
@@ -85,4 +95,13 @@ public class Casilla {
     public void setDisparada(boolean disparada) {
         this.disparada = disparada;
     }
+
+    public Coordenada getCoordenada() {
+        return coordenada;
+    }
+
+    public void setCoordenada(Coordenada coordenada) {
+        this.coordenada = coordenada;
+    }
+
 }
