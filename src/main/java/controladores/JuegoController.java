@@ -111,23 +111,7 @@ public class JuegoController {
         rival.agregarNavioDestruido(navio);
         Tablero tableroRival = rival.getTablero();
 
-        // Busca las casillas del navío y marca sus ocho vecinas
-        for (int fila = 0; fila < Tablero.TAMANO; fila++) {
-            for (int col = 0; col < Tablero.TAMANO; col++) {
-                Casilla actual = tableroRival.obtenerCasilla(new Coordenada(fila, col));
-                if (actual.getReferenciaNavio() != navio) {
-                    continue;
-                }
-                for (int df = -1; df <= 1; df++) {
-                    for (int dc = -1; dc <= 1; dc++) {
-                        Coordenada vecina = new Coordenada(fila + df, col + dc);
-                        if (tableroRival.coordenadaValida(vecina)) {
-                            tableroRival.obtenerCasilla(vecina).careceAdyacente();
-                        }
-                    }
-                }
-            }
-        }
+
     }
 
 }

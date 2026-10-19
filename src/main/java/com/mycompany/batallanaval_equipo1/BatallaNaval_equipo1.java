@@ -21,7 +21,8 @@ import vistas.VistaTerminal;
  *
  * @author Andre
  */
-public class BatallaNaval_equipo1 {
+public class
+BatallaNaval_equipo1 {
     private static final int LIMITE_SEGUNDOS_TURNO = 30;
 
     public static void main(String[] args) {
