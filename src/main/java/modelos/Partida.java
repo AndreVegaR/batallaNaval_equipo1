@@ -14,6 +14,10 @@ import observador.IObservadorTurno;
  */
 public class Partida implements IModelo, IObservableTurno{
 
+
+    /** Impactos seguidos en un mismo turno que desbloquean la habilidad */
+    private static final int ACIERTOS_PARA_HABILIDAD = 3;
+
     private EstadoPartida estado;
     private List<IObservadorTurno> observadores;
     private Jugador ganador;
@@ -68,6 +72,8 @@ public class Partida implements IModelo, IObservableTurno{
     public void cambiarJugador(Jugador jugador) {
         turnoJugador = jugador;
         cantidadTurnos++;
+        // Un turno nuevo empieza sin disparos para que los aciertos no se arrastren
+        jugador.getTurno().limpiarDisparos();
         notificarObservadores();
         reiniciarContador();
     }
@@ -112,12 +118,69 @@ public class Partida implements IModelo, IObservableTurno{
      */
     public Disparo agregarDisparoTurno(Disparo disparo) {
         Turno turno = turnoJugador.getTurno();
-        turno.agregarDisparo(disparo);
+        turno.agregarDisparo(disparo, disparo.isEsHabilidad());
         ultimoDisparo = disparo;
+
+        // Un acierto normal puede desbloquear la habilidad antes de avisar a los observadores
+        if (!disparo.isEsHabilidad() && disparo.isImpactoNavio()) {
+            actualizarHabilidad(turnoJugador);
+        }
         notificarObservadores();
         return disparo;
     }
-    
+
+    /**
+     * Da la habilidad al jugador si lleva los aciertos consecutivos necesarios en su turno
+     * @param jugador jugador al que se le revisan los aciertos
+     */
+    private void actualizarHabilidad(Jugador jugador) {
+        Turno turno = jugador.getTurno();
+        int aciertos = turno.contarAciertosConsecutivos();
+        if (aciertos >= ACIERTOS_PARA_HABILIDAD) {
+            jugador.setHabilidadDisponible(true);
+        }
+    }
+
+    /**
+     * Indica si el jugador en turno tiene la habilidad lista para usarse
+     * @return true si la habilidad está disponible
+     */
+    @Override
+    public boolean esHabilidadDisponible() {
+        return turnoJugador.tieneHabilidad();
+    }
+
+    /**
+     * Usa la habilidad del jugador en turno sobre el tablero del rival, si en la casilla
+     * hay un navío lo hunde completo sin importar su tamaño. La habilidad se gasta
+     * acierte o no, y el disparo queda registrado como disparo de habilidad
+     * @param coordenada casilla del rival sobre la que se usa la habilidad
+     * @return disparo de habilidad registrado
+     */
+    public Disparo usarHabilidad(Coordenada coordenada) {
+        // Marca la casilla elegida y crea el disparo de habilidad
+        Jugador rival = obtenerRival(turnoJugador);
+        Casilla casilla = marcarCasillaDisparada(coordenada);
+        Disparo disparo = new Disparo(coordenada);
+        disparo.setEsHabilidad(true);
+
+        // Si hay un navío lo hunde por completo y marca todas sus casillas
+        if (casilla.contieneNavio()) {
+            Navio navio = casilla.getReferenciaNavio();
+            navio.destruirNavio();
+            for (Casilla ocupada : rival.getTablero().obtenerCasillasDeNavio(navio)) {
+                ocupada.setDisparada(true);
+            }
+            rival.agregarNavioDestruido(navio);
+            disparo.setImpactoNavio(true);
+            disparo.setNavioImpactado(navio);
+        }
+
+        // La habilidad se consume y el disparo se registra en el turno
+        turnoJugador.setHabilidadDisponible(false);
+        return agregarDisparoTurno(disparo);
+    }
+
     /**
      * Marca como disparada una casilla del tablero del rival
      * @param coordenada casilla que se dispara

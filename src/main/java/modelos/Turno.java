@@ -24,11 +24,13 @@ public class Turno {
         this.disparos = new ArrayList<>();
     }
 
-    /** Reinicia el contador de tiempo y limpia los disparos del turno */
+    /**
+     * Reinicia solo el contador de tiempo, los disparos se conservan para poder
+     * contar los aciertos consecutivos del turno
+     */
     public void reiniciarContador() {
         segundosTranscurridos = 0;
         inicioMillis = System.currentTimeMillis();
-        disparos.clear();
     }
 
     /**
@@ -60,12 +62,46 @@ public class Turno {
         return Math.max(restantes, 0);
     }
 
+
+
+    /** Limpia los disparos, se usa cuando el jugador empieza un turno nuevo */
+    public void limpiarDisparos() {
+        disparos.clear();
+    }
+
     /**
      * Registra un disparo realizado durante este turno
      * @param disparo disparo que se guarda
      */
     public void agregarDisparo(Disparo disparo) {
         disparos.add(disparo);
+    }
+
+    /**
+     * Registra un disparo indicando si fue hecho con la habilidad
+     * @param disparo disparo que se guarda
+     * @param esHabilidad true si el disparo fue de habilidad
+     */
+    public void agregarDisparo(Disparo disparo, boolean esHabilidad) {
+        disparo.setEsHabilidad(esHabilidad);
+        agregarDisparo(disparo);
+    }
+
+    /**
+     * Cuenta los impactos a navíos seguidos con los que cierra el turno, un
+     * disparo al agua o uno de habilidad cortan la racha
+     * @return aciertos consecutivos más recientes del turno
+     */
+    public int contarAciertosConsecutivos() {
+        int aciertos = 0;
+        for (int i = disparos.size() - 1; i >= 0; i--) {
+            Disparo disparo = disparos.get(i);
+            if (disparo.isEsHabilidad() || !disparo.isImpactoNavio()) {
+                break;
+            }
+            aciertos++;
+        }
+        return aciertos;
     }
 
     public int getSegundosTranscurridos() {

@@ -54,10 +54,57 @@ public class JuegoController {
             disparo.setImpactoNavio(true);
             disparo.setNavioImpactado(navio);
             reiniciarContador();
+
+            //  de habilidad
+            // Si el impacto hundió el navío, el rival lo pierde de su flota activa
+            if (navio.estadoNavio() == EstadoNavio.HUNDIDO) {
+                rival.agregarNavioDestruido(navio);
+            }
         }
 
-        // Registra el disparo y decide si hay ganador, si se conserva el turno o si pasa al rival
+        // ahora se usa el metodo privado porque disparo y habilidad comparten lógica
         partida.agregarDisparoTurno(disparo);
+        resolverResultadoDisparo(disparo, jugadorActual, rival);
+
+    }
+
+    /**
+     * Procesa el uso de la habilidad del jugador en turno: valida el tiempo, que
+     * la habilidad esté disponible y que la casilla se pueda disparar, la usa y
+     * decide si hay ganador o si cambia el turno. Si el navío se hunde el jugador
+     * conserva el turno, si cae en agua el turno pasa al rival
+     *
+     * @param coordenada del tablero rival sobre la que se usa la habilidad
+     */
+    public void usarHabilidad(Coordenada coordenada) {
+        // Valida que el jugador aún tenga tiempo, que tenga la habilidad y que la casilla se pueda disparar
+        Jugador jugadorActual = partida.obtenerTurnoActual();
+        if (!partida.validarTurnoJugador(jugadorActual)) {
+            throw new IllegalStateException("Se agotó el tiempo de tu turno, la habilidad no se usó");
+        }
+        if (!partida.esHabilidadDisponible()) {
+            throw new IllegalArgumentException("No tienes la habilidad disponible, consigue 3 aciertos seguidos en un turno");
+        }
+        validarCasillaSeleccionada(coordenada);
+
+        // Usa la habilidad y decide si hay ganador, si se conserva el turno o si pasa al rival
+        Jugador rival = partida.obtenerRival(jugadorActual);
+        Disparo disparo = partida.usarHabilidad(coordenada);
+        if (disparo.isImpactoNavio()) {
+            reiniciarContador();
+        }
+        resolverResultadoDisparo(disparo, jugadorActual, rival);
+    }
+
+    /**
+     * Decide qué sigue después de un disparo: gana el jugador si el rival se
+     * quedó sin navíos, conserva el turno si impactó o pasa el turno si falló
+     *
+     * @param disparo disparo que se acaba de registrar
+     * @param jugadorActual jugador que disparó
+     * @param rival rival del jugador que disparó
+     */
+    private void resolverResultadoDisparo(Disparo disparo, Jugador jugadorActual, Jugador rival) {
         Jugador sinNavios = partida.obtenerNaviosFaltante();
         if (sinNavios != null) {
             partida.darVictoriaJugador(jugadorActual);

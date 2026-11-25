@@ -29,8 +29,6 @@ public class Tablero {
         }
     }
 
-
-
     /**
      * Obtiene la casilla que está en una coordenada, la coordenada debe ser válida
      * @param coordenada posición de la casilla buscada
@@ -39,6 +37,23 @@ public class Tablero {
     public Casilla obtenerCasilla(Coordenada coordenada) {
         List<Casilla> renglon = matriz.get(coordenada.getFila());
         return renglon.get(coordenada.getColumna());
+    }
+
+    /**
+     * Obtiene todas las casillas que ocupa un navío
+     * @param navio navío buscado
+     * @return casillas del tablero que referencian a ese navío
+     */
+    public List<Casilla> obtenerCasillasDeNavio(Navio navio) {
+        List<Casilla> casillas = new ArrayList<>();
+        for (List<Casilla> renglon : matriz) {
+            for (Casilla casilla : renglon) {
+                if (casilla.getReferenciaNavio() == navio) {
+                    casillas.add(casilla);
+                }
+            }
+        }
+        return casillas;
     }
 
     /**
@@ -51,6 +66,4 @@ public class Tablero {
         int columna = coordenada.getColumna();
         return fila >= 0 && fila < TAMANO && columna >= 0 && columna < TAMANO;
     }
-
-
 }

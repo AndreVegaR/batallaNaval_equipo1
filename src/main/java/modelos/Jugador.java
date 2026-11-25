@@ -15,6 +15,7 @@ public class Jugador {
     private List<Navio> naviosDestruidos;
     private Tablero tablero;
     private Turno turno;
+    private boolean habilidadDisponible;
 
     /**
      * Constructor
@@ -27,6 +28,7 @@ public class Jugador {
         this.naviosDestruidos = new ArrayList<>();
         this.tablero = new Tablero();
         this.turno = new Turno();
+        this.habilidadDisponible = false;
     }
 
     /**
@@ -38,6 +40,22 @@ public class Jugador {
         if (!naviosDestruidos.contains(navio)) {
             naviosDestruidos.add(navio);
         }
+    }
+
+    /**
+     * Indica si el jugador tiene la habilidad lista para usarse
+     * @return true si la habilidad está disponible
+     */
+    public boolean tieneHabilidad() {
+        return habilidadDisponible;
+    }
+
+    /**
+     * Da o quita la habilidad al jugador
+     * @param habilidadDisponible true para habilitarla, false para deshabilitarla
+     */
+    public void setHabilidadDisponible(boolean habilidadDisponible) {
+        this.habilidadDisponible = habilidadDisponible;
     }
 
     public Perfil getPerfil() {

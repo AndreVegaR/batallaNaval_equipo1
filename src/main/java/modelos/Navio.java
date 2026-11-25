@@ -53,6 +53,11 @@ public class Navio {
         }
     }
 
+    /** Hunde el navío por completo sin importar cuántos impactos llevaba, lo usa la habilidad */
+    public void destruirNavio() {
+        impactos = numCasillas;
+    }
+
     public TipoNavio getTipo() {
         return tipo;
     }

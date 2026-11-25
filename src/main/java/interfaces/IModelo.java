@@ -74,4 +74,10 @@ public interface IModelo {
      * @return segundos restantes del turno actual
      */
     int obtenerSegundosRestantes();
+
+    /**
+     * Indica si el jugador en turno tiene la habilidad lista para usarse
+     * @return true si la habilidad está disponible
+     */
+    boolean esHabilidadDisponible();
 }

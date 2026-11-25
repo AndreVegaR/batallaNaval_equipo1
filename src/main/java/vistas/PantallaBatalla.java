@@ -32,6 +32,8 @@ public class PantallaBatalla implements IObservadorTurno {
     private Scanner scanner;
     private boolean ejecutando;
     private Jugador jugadorMostrado;
+    private boolean habilidadAnunciada;
+    private Disparo ultimoDisparoAnunciado;
 
     /**
      * Construye la vista con todo lo que necesita para funcionar
@@ -45,6 +47,8 @@ public class PantallaBatalla implements IObservadorTurno {
         this.modelo = modelo;
         this.scanner = new Scanner(System.in);
         this.ejecutando = false;
+        this.habilidadAnunciada = false;
+        this.ultimoDisparoAnunciado = null;
     }
 
     /**
@@ -73,17 +77,19 @@ public class PantallaBatalla implements IObservadorTurno {
 
             switch (opcion) {
                 case "1" ->
-                    gestionarVerNavios();
+                        gestionarVerNavios();
                 case "2" ->
-                    gestionarVerMiTablero();
+                        gestionarVerMiTablero();
                 case "3" ->
-                    gestionarVerTableroRival();
+                        gestionarVerTableroRival();
                 case "4" ->
-                    gestionarDisparar();
+                        gestionarDisparar();
                 case "5" ->
-                    gestionarSalir();
+                        gestionarUsarHabilidad();
+                case "6" ->
+                        gestionarSalir();
                 default ->
-                    imprimirError("Opción no válida");
+                        imprimirError("Opción no válida");
             }
         }
 
@@ -99,9 +105,10 @@ public class PantallaBatalla implements IObservadorTurno {
         Jugador jugador = modelo.obtenerTurnoActual();
         int numeroTurno = modelo.obtenerCantidadTurnos();
         int segundosRestantes = modelo.obtenerSegundosRestantes();
+        boolean habilidadDisponible = modelo.esHabilidadDisponible();
 
         // Imprime el menú con esos datos
-        imprimirMenuPrincipal(jugador, numeroTurno, segundosRestantes);
+        imprimirMenuPrincipal(jugador, numeroTurno, segundosRestantes, habilidadDisponible);
     }
 
     /**
@@ -187,6 +194,62 @@ public class PantallaBatalla implements IObservadorTurno {
         Jugador jugadorActual = modelo.obtenerTurnoActual();
         boolean finDeJuego = modelo.esFinDeJuego();
         return jugadorActual == jugadorInicial && !finDeJuego && ejecutando;
+    }
+
+    /**
+     * Gestiona el uso de la habilidad, solo se puede entrar si el jugador la
+     * tiene disponible. Pide la coordenada hasta que la habilidad se use, se
+     * agote el tiempo o se regrese con 0
+     */
+    private void gestionarUsarHabilidad() {
+        if (!modelo.esHabilidadDisponible()) {
+            imprimirError("No tienes la habilidad disponible, consigue 3 aciertos seguidos en un turno");
+            return;
+        }
+
+        boolean usando = true;
+        while (usando && ejecutando && !modelo.esFinDeJuego()) {
+            // Muestra el tablero rival y pide la coordenada
+            gestionarVerTableroRival();
+            imprimirSolicitudCoordenadaHabilidad();
+            String entrada = leerLinea();
+
+            // Regresa al menú principal, cancela o usa la habilidad
+            if (entrada.equals("0") || !ejecutando || modelo.esFinDeJuego()) {
+                usando = false;
+            } else {
+                usando = procesarEntradaHabilidad(entrada);
+            }
+        }
+    }
+
+    /**
+     * Interpreta la entrada del jugador, envía el uso de la habilidad al
+     * controlador y atiende los errores de validación
+     *
+     * @param entrada texto escrito por el jugador con la coordenada
+     * @return true si hay que volver a pedir la coordenada
+     */
+    private boolean procesarEntradaHabilidad(String entrada) {
+        // Interpreta la coordenada escrita
+        Coordenada coordenada = interpretarCoordenada(entrada);
+        if (coordenada == null) {
+            imprimirError("Formato no válido, escribe fila,columna con números del 1 al 10");
+            return true;
+        }
+
+        // Envía la habilidad al controlador, el resultado lo anuncia el observador
+        try {
+            controlador.usarHabilidad(coordenada);
+        } catch (IllegalArgumentException e) {
+            imprimirError(e.getMessage());
+            return true;
+        } catch (IllegalStateException e) {
+            imprimirError(e.getMessage());
+            controlador.pasarTurno();
+            return false;
+        }
+        return false;
     }
 
     /**
@@ -290,17 +353,35 @@ public class PantallaBatalla implements IObservadorTurno {
             return;
         }
 
+        // Anuncia el resultado de la habilidad una sola vez, antes de cualquier cambio de turno
+        Disparo ultimoDisparo = model.obtenerUltimoDisparo();
+        if (ultimoDisparo != null && ultimoDisparo != ultimoDisparoAnunciado) {
+            ultimoDisparoAnunciado = ultimoDisparo;
+            if (ultimoDisparo.isEsHabilidad()) {
+                imprimirResultadoHabilidad(ultimoDisparo);
+            }
+        }
+
         // Anuncia el cambio de turno cuando el jugador en turno es distinto al que se mostraba
         Jugador jugadorActual = model.obtenerTurnoActual();
         if (jugadorActual != jugadorMostrado) {
             jugadorMostrado = jugadorActual;
+            habilidadAnunciada = model.esHabilidadDisponible();
             int numeroTurno = model.obtenerCantidadTurnos();
             Turno turno = jugadorActual.getTurno();
             int segundosTotales = turno.getSegundosTotales();
             imprimirCambioTurno(jugadorActual, numeroTurno, segundosTotales);
             imprimirPausa();
             leerLinea();
+            return;
         }
+
+        // Anuncia que se desbloqueó la habilidad y deja de anunciarla cuando se gasta
+        boolean habilidadDisponible = model.esHabilidadDisponible();
+        if (habilidadDisponible && !habilidadAnunciada) {
+            imprimirHabilidadDesbloqueada();
+        }
+        habilidadAnunciada = habilidadDisponible;
     }
 
     // ==================== MÉTODOS DE IMPRESIÓN ====================
@@ -322,8 +403,9 @@ public class PantallaBatalla implements IObservadorTurno {
      * @param jugador que tiene el turno
      * @param numeroTurno en el que va la partida
      * @param segundosRestantes que le quedan al jugador en turno
+     * @param habilidadDisponible si el jugador puede usar su habilidad
      */
-    private void imprimirMenuPrincipal(Jugador jugador, int numeroTurno, int segundosRestantes) {
+    private void imprimirMenuPrincipal(Jugador jugador, int numeroTurno, int segundosRestantes, boolean habilidadDisponible) {
         // Obtiene los datos del perfil del jugador
         Perfil perfil = jugador.getPerfil();
         String nombre = perfil.getNombre();
@@ -334,6 +416,7 @@ public class PantallaBatalla implements IObservadorTurno {
         System.out.println(SEPARADOR);
         System.out.println("TURNO " + numeroTurno + " | " + nombre + " [" + color + "]");
         System.out.println("Tiempo restante: " + segundosRestantes + " s");
+        System.out.println("Habilidad: " + (habilidadDisponible ? "DISPONIBLE" : "bloqueada (3 aciertos seguidos)"));
         System.out.println(SEPARADOR);
 
         // Imprime las opciones del menú
@@ -341,7 +424,8 @@ public class PantallaBatalla implements IObservadorTurno {
         System.out.println("2. Ver mi tablero");
         System.out.println("3. Ver tablero del rival");
         System.out.println("4. Disparar");
-        System.out.println("5. Salir");
+        System.out.println("5. Usar habilidad");
+        System.out.println("6. Salir");
         System.out.print("Elige una opción: ");
     }
 
@@ -410,15 +494,15 @@ public class PantallaBatalla implements IObservadorTurno {
     private String obtenerSimbolo(EstadoCasilla estado, boolean mostrarNavios) {
         return switch (estado) {
             case AGUA ->
-                "o";
+                    "o";
             case IMPACTO ->
-                "X";
+                    "X";
             case HUNDIDO ->
-                "#";
+                    "#";
             case NAVIO ->
-                mostrarNavios ? "N" : ".";
+                    mostrarNavios ? "N" : ".";
             default ->
-                ".";
+                    ".";
         };
     }
 
@@ -436,6 +520,45 @@ public class PantallaBatalla implements IObservadorTurno {
      */
     private void imprimirSolicitudCoordenada() {
         System.out.print("Coordenada como fila,columna (ejemplo 3,5) o 0 para regresar: ");
+    }
+
+    /**
+     * Imprime la petición de una coordenada para usar la habilidad
+     */
+    private void imprimirSolicitudCoordenadaHabilidad() {
+        System.out.print("HABILIDAD: coordenada como fila,columna (ejemplo 3,5) o 0 para regresar: ");
+    }
+
+    /**
+     * Imprime el aviso de que el jugador desbloqueó la habilidad
+     */
+    private void imprimirHabilidadDesbloqueada() {
+        System.out.println();
+        System.out.println(SEPARADOR);
+        System.out.println("¡HABILIDAD DESBLOQUEADA!");
+        System.out.println("3 aciertos seguidos: usa la opción 5 para hundir un navío completo");
+        System.out.println(SEPARADOR);
+    }
+
+    /**
+     * Imprime el resultado de haber usado la habilidad
+     *
+     * @param disparo disparo de habilidad que se acaba de registrar
+     */
+    private void imprimirResultadoHabilidad(Disparo disparo) {
+        Coordenada coordenada = disparo.getCasillaDisparada();
+        String posicion = (coordenada.getFila() + 1) + "," + (coordenada.getColumna() + 1);
+
+        System.out.println();
+        System.out.println(SEPARADOR);
+        System.out.println("¡HABILIDAD USADA en " + posicion + "!");
+        if (disparo.isImpactoNavio()) {
+            Navio navio = disparo.getNavioImpactado();
+            System.out.println("Hundiste un " + navio.getTipo() + " completo, conservas el turno");
+        } else {
+            System.out.println("La habilidad cayó en agua, se pierde y pasa el turno");
+        }
+        System.out.println(SEPARADOR);
     }
 
     /**
